@@ -23,7 +23,7 @@ const client = new ImapFlow({
   secure: true,
   auth: {
     user: 'agana@salesys.se',
-    pass: 'jgaiyrsivjgzhvub',
+    pass: process.env.GMAIL_APP_PASSWORD || 'jgaiyrsivjgzhvub',
   },
   logger: false,
 });

@@ -188,6 +188,7 @@ function readSecrets(): Record<string, string> {
     'SALESYS_API_TOKEN',
     'SALESYS_ADMIN_API_BASE_URL',
     'SALESYS_APP_API_BASE_URL',
+    'GMAIL_APP_PASSWORD',
   ]);
 }
 
