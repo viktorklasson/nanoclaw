@@ -51,12 +51,12 @@ Use it as the Bearer token for all subsequent `https://app.salesys.se/api` reque
 
 **Instructions for Agana:**
 1. If the username is not provided, list organizations first (`GET /api/users/organizations-v1?hidden=false`) and ask the user which one, then look up its users (`GET /api/users/users-v1?organizationId=<id>`) to find the username
-2. Run `node /app/get-customer-token.mjs <username>` — do NOT wait or ask the user
+2. Run `node /app/get-customer-token.mjs <username>` ONCE — this script handles everything internally. Do NOT also call the support-v1 POST endpoint manually; the script already does it.
 3. Verify the token with the `/me` endpoint
 4. Proceed with the original request
 5. Do NOT store the customer token between sessions — re-authenticate when needed
 
-Do NOT ask the user to provide the token — fetch it automatically.
+Do NOT ask the user to provide the token. Do NOT call the support-v1 endpoint manually — always use the script.
 
 ---
 
@@ -247,34 +247,9 @@ curl 'https://admin.salesys.se/api/users/organizations-v1?hidden=false' \
 
 ## Support Codes
 
-Generate a support login code for a given username. Uses the global token.
+> **Do not call this endpoint directly.** Use `node /app/get-customer-token.mjs <username>` instead — it calls this internally and handles the full token exchange.
 
-### Endpoint
-
-```
-POST https://admin.salesys.se/api/users/support-v1
-```
-
-### Request Body
-
-```json
-{
-  "username": "<salesys_username>"
-}
-```
-
-### Response
-
-Returns `"Created"` (HTTP 201) on success.
-
-### Example
-
-```bash
-curl -X POST 'https://admin.salesys.se/api/users/support-v1' \
-  -H "Authorization: Bearer $SALESYS_API_TOKEN" \
-  -H 'Content-Type: application/json' \
-  -d '{"username":"some_username"}'
-```
+This endpoint is used internally by `get-customer-token.mjs`. Calling it manually while also running the script will trigger duplicate support emails to the customer.
 
 ---
 
