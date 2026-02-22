@@ -63,12 +63,20 @@ Key entities:
 
 Two authentication contexts — always check the docs before making requests:
 - *Global token* (in `.env`) — for Arbetsmallar and global operations
-- *Customer token* — requires an MFA flow: trigger code to viktor.klasson@hotmail.com, ask the user for the code, then exchange it for a scoped token
+- *Customer token* — run `node /app/get-customer-token.mjs <username>` (handles everything automatically)
 
 Never hardcode tokens. Never store customer tokens between sessions.
 On customer accounts: READ and POST only — never edit or delete existing records.
 
 Only interact with SaleSys when explicitly asked. It is one of many things you can help with.
+
+## Google Drive
+
+You have read-only access to Google Drive via MCP tools:
+- `mcp__gdrive__search` — search for files by name or content
+- `mcp__gdrive__read_file` — read the contents of a file by ID
+
+Use these to look up company documents, API specs, process docs, or any files the user refers to. The Drive account has access to the SaleSys company folder.
 
 ## Message Formatting
 

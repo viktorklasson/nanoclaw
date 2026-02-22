@@ -164,6 +164,16 @@ function buildVolumeMounts(
     readonly: true,
   });
 
+  // Google Drive MCP credentials
+  const gdriveMcpDir = path.join(homeDir, '.gdrive-mcp');
+  if (fs.existsSync(gdriveMcpDir)) {
+    mounts.push({
+      hostPath: gdriveMcpDir,
+      containerPath: '/home/node/.gdrive-mcp',
+      readonly: true,
+    });
+  }
+
   // Additional mounts validated against external allowlist (tamper-proof from containers)
   if (group.containerConfig?.additionalMounts) {
     const validatedMounts = validateAdditionalMounts(
