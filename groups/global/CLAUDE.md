@@ -76,7 +76,7 @@ You have read-only access to Google Drive via MCP tools:
 - `mcp__gdrive__search` — search for files by name or content
 - `mcp__gdrive__read_file` — read the contents of a file by ID
 
-Use these to look up company documents, API specs, process docs, or any files the user refers to. The Drive account has access to the SaleSys company folder.
+Company documentation is in a folder called *SaleSys Docs*. When asked to look something up, search Drive first before saying you don't know. Use these to look up API specs, process docs, internal guides, or any files the user refers to.
 
 ## Message Formatting
 
