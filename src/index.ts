@@ -9,7 +9,9 @@ import {
   POLL_INTERVAL,
   TRIGGER_PATTERN,
 } from './config.js';
+import { SlackChannel } from './channels/slack.js';
 import { WhatsAppChannel } from './channels/whatsapp.js';
+import { readEnvFile } from './env.js';
 import {
   ContainerOutput,
   runContainerAgent,
@@ -437,6 +439,26 @@ async function main(): Promise<void> {
   whatsapp = new WhatsAppChannel(channelOpts);
   channels.push(whatsapp);
   await whatsapp.connect();
+
+  // Slack channel (enabled when SLACK_BOT_TOKEN is set)
+  const slackEnv = readEnvFile(['SLACK_BOT_TOKEN', 'SLACK_CHANNEL_ID']);
+  if (slackEnv.SLACK_BOT_TOKEN) {
+    const slack = new SlackChannel({ ...channelOpts, registerGroup });
+    channels.push(slack);
+    await slack.connect();
+
+    // Register the main Slack channel if not already in DB
+    const slackJid = `slack:${slackEnv.SLACK_CHANNEL_ID}`;
+    if (slackEnv.SLACK_CHANNEL_ID && !registeredGroups[slackJid]) {
+      registerGroup(slackJid, {
+        name: 'Slack #assistant',
+        folder: 'slack-main',
+        trigger: '',
+        added_at: new Date().toISOString(),
+        requiresTrigger: false,
+      });
+    }
+  }
 
   // Start subsystems (independently of connection handler)
   startSchedulerLoop({
