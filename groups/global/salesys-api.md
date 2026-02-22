@@ -36,7 +36,7 @@ curl -X POST 'https://admin.salesys.se/api/users/support-v1' \
   -d '{"username": "<salesys_username>"}'
 ```
 
-Returns HTTP 201 on success. SaleSys sends an email (subject: "Serviceinlogg för ...") to viktor.klasson@hotmail.com containing a SafeLinks-wrapped URL. Following that URL yields the customer bearer token.
+Returns HTTP 201 on success. SaleSys sends an email (subject: "Serviceinlogg för ...") to agana@salesys.se containing a SafeLinks-wrapped URL. Following that URL yields the customer bearer token.
 
 **Step 2 — Fetch token from inbox automatically**
 
@@ -44,7 +44,7 @@ Returns HTTP 201 on success. SaleSys sends an email (subject: "Serviceinlogg fö
 node /app/fetch-mfa-code.mjs 60 salesys
 ```
 
-This polls viktor.klasson@hotmail.com for up to 60 seconds and prints the `login-...` token.
+This polls agana@salesys.se for up to 60 seconds and prints the `login-...` token.
 
 **Step 3 — Verify the token**
 

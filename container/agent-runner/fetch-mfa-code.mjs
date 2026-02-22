@@ -18,12 +18,12 @@ const TIMEOUT_SECS = parseInt(process.argv[2] || '60', 10);
 const POLL_INTERVAL_MS = 5000;
 
 const client = new ImapFlow({
-  host: 'outlook.office365.com',
+  host: 'imap.gmail.com',
   port: 993,
   secure: true,
   auth: {
-    user: 'viktor.klasson@hotmail.com',
-    pass: 'yqfqbubevgnisgwe',
+    user: 'agana@salesys.se',
+    pass: 'jgaiyrsivjgzhvub',
   },
   logger: false,
 });
