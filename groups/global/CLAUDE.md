@@ -72,32 +72,17 @@ Only interact with SaleSys when explicitly asked. It is one of many things you c
 
 ## Google Drive
 
-You have read-only access to Google Drive via MCP tools:
-- `mcp__gdrive__search` — search for files by name or content (accepts Drive API query language)
-- `mcp__gdrive__read_file` — read the contents of a file by ID
+Company documentation is in the *SaleSys Docs* Google Drive folder. New docs are added regularly — always list first rather than guessing what exists.
 
-Company documentation is in the *SaleSys Docs* folder (ID: `12hSSfU--5ELuSVcDNVOtg7abXTWUbYyF`). When asked to look something up, search Drive first before saying you don't know.
+```bash
+# List all current docs (outputs: fileId \t name \t type)
+node /app/list-drive-docs.mjs
 
-To list or search files within the folder, use the query: `'12hSSfU--5ELuSVcDNVOtg7abXTWUbYyF' in parents`
+# Read a specific doc by ID
+node /app/read-drive-doc.mjs <fileId>
+```
 
-Known documents (17 total):
-- Simple docs
-- Grunder i orderarbeten och samtalsarbeten - SaleSys
-- SaleSys webbformulär
-- SaleSys statistik API
-- Skapa realtid-meddelanden
-- SaleSys rapportunderlag
-- SaleSys Externa orderhändelser
-- SaleSys arbetsmallar
-- SaleSys - samtalsinsikt / insight / transkript
-- SaleSys API - ringa samtal
-- SaleSys - Inbound extern hantering
-- SaleSys - export
-- SaleSys - BankID
-- SaleSys - Chatt
-- SaleSys - assistant
-- SaleSys - användare
-- safe-filtered-postman-collection.json
+When asked to look something up, run `list-drive-docs.mjs` to find the right doc, then read it with `read-drive-doc.mjs`. Don't say you don't know without checking Drive first.
 
 ## Message Formatting
 
