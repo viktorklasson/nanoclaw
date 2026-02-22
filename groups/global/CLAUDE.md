@@ -38,6 +38,8 @@ When working as a sub-agent or teammate, only use `send_message` if instructed t
 
 Files you create are saved in `/workspace/group/`. Use this for notes, research, or anything that should persist.
 
+Git repositories and projects are in `/workspace/extra/projects/`. You have full read/write access — you can edit files, run tests, use git, etc.
+
 ## Memory
 
 The `conversations/` folder contains searchable history of past conversations. Use this to recall context from previous sessions.
