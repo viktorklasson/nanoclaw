@@ -29,57 +29,50 @@ Base URL: `https://app.salesys.se/api`
 
 Used for: Orderarbeten, Samtalsarbeten, Webforms, and anything scoped to a specific customer account.
 
-This requires a two-step MFA flow:
+The flow uses the admin token to request a customer token, which is delivered via email.
 
-**Step 1 — Request MFA code**
+**Step 1 — Request token via Support Codes endpoint (uses admin token)**
 
-<!-- Fill in the real endpoint and payload:
+```bash
+curl -X POST 'https://admin.salesys.se/api/users/support-v1' \
+  -H "Authorization: Bearer $SALESYS_API_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"username": "<salesys_username>"}'
+```
 
-curl -X POST "$SALESYS_API_BASE_URL/auth/mfa/request" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "customer_id": "<customer_id>",
-    "email": "viktor.klasson@hotmail.com"
-  }'
+Returns HTTP 201 on success. SaleSys sends an email (subject: "Serviceinlogg för ...") to viktor.klasson@hotmail.com containing a SafeLinks-wrapped URL. Following that URL yields the customer bearer token.
 
--->
+**Step 2 — Fetch token from inbox automatically**
 
-After this request, an MFA code is sent to viktor.klasson@hotmail.com.
+```bash
+node /app/fetch-mfa-code.mjs 60 salesys
+```
 
-**Step 2 — Submit MFA code to get customer token**
+This polls viktor.klasson@hotmail.com for up to 60 seconds and prints the `login-...` token.
 
-<!-- Fill in the real endpoint and payload:
+**Step 3 — Verify the token**
 
-curl -X POST "$SALESYS_API_BASE_URL/auth/mfa/verify" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "customer_id": "<customer_id>",
-    "code": "<mfa_code>"
-  }'
+```bash
+curl 'https://app.salesys.se/api/users/organizations-v1/me' \
+  -H "Authorization: Bearer <token>" \
+  -H 'Content-Type: application/json'
+```
 
-Response:
-{
-  "token": "<customer_scoped_token>"
-}
+A successful response confirms the token is valid and which organization is active.
 
--->
+**Step 4 — Use the token**
 
-Use the returned token as the Bearer token for all subsequent requests on that customer's account.
+Use it as the Bearer token for all subsequent `https://app.salesys.se/api` requests.
 
-**MFA flow instructions for Agana:**
-1. Ask the user which customer account to authenticate against (if not already specified)
-2. Make the MFA request to trigger the code email
-3. Immediately run the inbox poller to fetch the code automatically:
-   ```bash
-   node /app/fetch-mfa-code.mjs 60 salesys
-   ```
-   This polls viktor.klasson@hotmail.com for up to 60 seconds and prints the code.
-   Pass a sender keyword (e.g. `salesys`) to filter by sender/subject.
-4. Use the printed code to get the customer token
-5. Proceed with the original request using that token
-6. Do NOT store the customer token between sessions — re-authenticate each time it is needed
+**Instructions for Agana:**
+1. If the username is not provided, list organizations first (`GET /api/users/organizations-v1?hidden=false`) and ask the user which one, then use its `simpleId` or the associated username
+2. Call the Support Codes endpoint with the admin token
+3. Immediately run the inbox poller — do NOT wait or ask the user
+4. Verify the token with the `/me` endpoint
+5. Proceed with the original request
+6. Do NOT store the customer token between sessions — re-authenticate when needed
 
-Do NOT ask the user to paste the MFA code — fetch it automatically from the inbox.
+Do NOT ask the user to provide the token — fetch it automatically from the inbox.
 
 ---
 
