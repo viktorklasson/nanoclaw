@@ -47,6 +47,29 @@ When you learn something important:
 - Split files larger than 500 lines into folders
 - Keep an index in your memory for the files you create
 
+## SaleSys
+
+You have access to the SaleSys CRM API. SaleSys is a startup CRM system. When asked to interact with SaleSys, read the full API docs first:
+
+```bash
+cat /workspace/global/salesys-api.md
+```
+
+Key entities:
+- *Orderarbeten* — work orders
+- *Samtalsarbeten* — call-based work items
+- *Arbetsmallar* — global templates for both of the above
+- *Webforms* — e-sign checkout pages built with HTML Handlebars templates
+
+Two authentication contexts — always check the docs before making requests:
+- *Global token* (in `.env`) — for Arbetsmallar and global operations
+- *Customer token* — requires an MFA flow: trigger code to viktor.klasson@hotmail.com, ask the user for the code, then exchange it for a scoped token
+
+Never hardcode tokens. Never store customer tokens between sessions.
+On customer accounts: READ and POST only — never edit or delete existing records.
+
+Only interact with SaleSys when explicitly asked. It is one of many things you can help with.
+
 ## Message Formatting
 
 NEVER use markdown. Only use WhatsApp/Telegram formatting:
