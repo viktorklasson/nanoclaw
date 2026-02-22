@@ -10,12 +10,8 @@ Used for: creating/editing Arbetsmallar and any other global-scope endpoints.
 
 Base URL: `https://admin.salesys.se/api`
 
-Read token from environment:
-```bash
-SALESYS_API_TOKEN=$(grep '^SALESYS_API_TOKEN=' ~/nanoclaw/.env | cut -d= -f2-)
-```
+The token is available directly as an environment variable:
 
-Include in every admin request:
 ```
 Authorization: Bearer $SALESYS_API_TOKEN
 Content-Type: application/json
