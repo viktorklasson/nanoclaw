@@ -106,7 +106,11 @@ async function searchForToken(sinceDate) {
     if (!msg?.source) continue;
 
     const subject = msg.envelope?.subject ?? '';
-    const body = msg.source.toString('utf-8');
+    // Decode quoted-printable encoding (soft line breaks and =XX sequences)
+    const body = msg.source
+      .toString('utf-8')
+      .replace(/=\r?\n/g, '')
+      .replace(/=([0-9A-Fa-f]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
 
     // Only process SaleSys service login emails
     if (!subject.toLowerCase().includes('serviceinlogg') && !body.includes('salesys.se')) {

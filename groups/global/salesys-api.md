@@ -25,28 +25,17 @@ Base URL: `https://app.salesys.se/api`
 
 Used for: Orderarbeten, Samtalsarbeten, Webforms, and anything scoped to a specific customer account.
 
-The flow uses the admin token to request a customer token, which is delivered via email.
+The flow uses the admin token to obtain a customer token in a single command — no email needed.
 
-**Step 1 — Request token via Support Codes endpoint (uses admin token)**
-
-```bash
-curl -X POST 'https://admin.salesys.se/api/users/support-v1' \
-  -H "Authorization: Bearer $SALESYS_API_TOKEN" \
-  -H 'Content-Type: application/json' \
-  -d '{"username": "<salesys_username>"}'
-```
-
-Returns HTTP 201 on success. SaleSys sends an email (subject: "Serviceinlogg för ...") to agana@salesys.se containing a SafeLinks-wrapped URL. Following that URL yields the customer bearer token.
-
-**Step 2 — Fetch token from inbox automatically**
+**Get token in one command**
 
 ```bash
-node /app/fetch-mfa-code.mjs 60 salesys
+node /app/get-customer-token.mjs <username>
 ```
 
-This polls agana@salesys.se for up to 60 seconds and prints the `login-...` token.
+This POSTs to the Support Codes endpoint with the admin token, captures the session cookie from the response, exchanges it for the customer bearer token, and prints it to stdout. Done in under a second.
 
-**Step 3 — Verify the token**
+**Verify the token**
 
 ```bash
 curl 'https://app.salesys.se/api/users/organizations-v1/me' \
@@ -56,19 +45,18 @@ curl 'https://app.salesys.se/api/users/organizations-v1/me' \
 
 A successful response confirms the token is valid and which organization is active.
 
-**Step 4 — Use the token**
+**Use the token**
 
 Use it as the Bearer token for all subsequent `https://app.salesys.se/api` requests.
 
 **Instructions for Agana:**
-1. If the username is not provided, list organizations first (`GET /api/users/organizations-v1?hidden=false`) and ask the user which one, then use its `simpleId` or the associated username
-2. Call the Support Codes endpoint with the admin token
-3. Immediately run the inbox poller — do NOT wait or ask the user
-4. Verify the token with the `/me` endpoint
-5. Proceed with the original request
-6. Do NOT store the customer token between sessions — re-authenticate when needed
+1. If the username is not provided, list organizations first (`GET /api/users/organizations-v1?hidden=false`) and ask the user which one, then look up its users (`GET /api/users/users-v1?organizationId=<id>`) to find the username
+2. Run `node /app/get-customer-token.mjs <username>` — do NOT wait or ask the user
+3. Verify the token with the `/me` endpoint
+4. Proceed with the original request
+5. Do NOT store the customer token between sessions — re-authenticate when needed
 
-Do NOT ask the user to provide the token — fetch it automatically from the inbox.
+Do NOT ask the user to provide the token — fetch it automatically.
 
 ---
 
