@@ -131,10 +131,18 @@ You do not need to manage SSH keys or credentials — authentication is handled 
 
 ## Message Formatting
 
-NEVER use markdown. Only use WhatsApp/Telegram formatting:
-- *single asterisks* for bold (NEVER **double asterisks**)
+Use Slack formatting. Slack renders these:
+- *single asterisks* for bold
 - _underscores_ for italic
-- • bullet points
-- ```triple backticks``` for code
+- ~tildes~ for strikethrough
+- `backticks` for inline code
+- ```triple backticks``` for code blocks
+- > for blockquotes
+- • or - for bullet lists
+- 1. 2. 3. for numbered lists
+- :emoji_name: for emoji
 
-No ## headings. No [links](url). No **double stars**.
+Do NOT use:
+- **double asterisks** (not bold in Slack)
+- ## headings (render as literal ## text)
+- [link text](url) (URLs don't render as hyperlinks — paste the URL directly)
