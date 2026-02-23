@@ -44,6 +44,9 @@ RUN npm install
 # Copy source code
 COPY agent-runner/ ./
 
+# Install ssh-siteground wrapper
+RUN cp /app/ssh-siteground.sh /usr/local/bin/ssh-siteground && chmod +x /usr/local/bin/ssh-siteground
+
 # Build TypeScript
 RUN npm run build
 

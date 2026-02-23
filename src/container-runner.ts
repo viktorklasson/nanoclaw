@@ -174,6 +174,16 @@ function buildVolumeMounts(
     });
   }
 
+  // SiteGround SSH key (read-only — agent can only use ssh-siteground wrapper)
+  const sitegroundKey = path.join(homeDir, '.config', 'nanoclaw', 'siteground_id_ed25519');
+  if (fs.existsSync(sitegroundKey)) {
+    mounts.push({
+      hostPath: sitegroundKey,
+      containerPath: '/home/node/.ssh/siteground_id_ed25519',
+      readonly: true,
+    });
+  }
+
   // Additional mounts validated against external allowlist (tamper-proof from containers)
   if (group.containerConfig?.additionalMounts) {
     const validatedMounts = validateAdditionalMounts(
@@ -199,6 +209,7 @@ function readSecrets(): Record<string, string> {
     'SALESYS_ADMIN_API_BASE_URL',
     'SALESYS_APP_API_BASE_URL',
     'GMAIL_APP_PASSWORD',
+    'SITEGROUND_SSH_PASSPHRASE',
   ]);
 }
 

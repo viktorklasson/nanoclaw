@@ -86,6 +86,28 @@ node /app/read-drive-doc.mjs <fileId>
 
 When asked to look something up, run `list-drive-docs.mjs` to find the right doc, then read it with `read-drive-doc.mjs`. Don't say you don't know without checking Drive first.
 
+## SiteGround (PHP support files)
+
+Orderarbeten and samtalsarbeten sometimes reference PHP support files hosted on SiteGround. You can read these files using the `ssh-siteground` command.
+
+*Read-only access only* — the tool blocks any write or destructive operation.
+
+```bash
+# List files in a directory
+ssh-siteground "ls -la /path/to/dir"
+
+# Read a PHP file
+ssh-siteground "cat /path/to/file.php"
+
+# Search for a pattern
+ssh-siteground "grep -r 'pattern' /path/to/dir"
+
+# Find PHP files
+ssh-siteground "find /var/www -name '*.php' | head -30"
+```
+
+You do not need to manage SSH keys or credentials — authentication is handled automatically.
+
 ## Message Formatting
 
 NEVER use markdown. Only use WhatsApp/Telegram formatting:

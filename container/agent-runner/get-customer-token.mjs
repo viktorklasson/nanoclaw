@@ -12,10 +12,17 @@
  * Exits 1 on error (reason printed to stderr).
  */
 
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+
 const USERNAME = process.argv[2];
 const ADMIN_TOKEN = process.env.SALESYS_API_TOKEN;
 const ADMIN_BASE = process.env.SALESYS_ADMIN_API_BASE_URL || 'https://admin.salesys.se/api';
 const APP_BASE = process.env.SALESYS_APP_API_BASE_URL || 'https://app.salesys.se/api';
+
+const TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
+const CACHE_FILE = path.join(os.tmpdir(), `salesys-token-${USERNAME}.json`);
 
 if (!USERNAME) {
   console.error('Usage: node get-customer-token.mjs <username>');
@@ -24,6 +31,17 @@ if (!USERNAME) {
 if (!ADMIN_TOKEN) {
   console.error('SALESYS_API_TOKEN not set');
   process.exit(1);
+}
+
+// Return cached token if still valid
+try {
+  const cached = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf8'));
+  if (cached.token && Date.now() - cached.fetchedAt < TOKEN_TTL_MS) {
+    console.log(cached.token);
+    process.exit(0);
+  }
+} catch {
+  // No cache or unreadable — fetch fresh
 }
 
 // Step 1: POST support-v1 with admin token — response sets s2_supportToken_{userId} cookie
@@ -74,6 +92,12 @@ const getCookies = getRes.headers.getSetCookie?.() ?? [getRes.headers.get('set-c
 for (const c of getCookies) {
   const m = c.match(/s2_utoken=([^;]+)/);
   if (m) {
+    // Cache the token for reuse within the same session
+    try {
+      fs.writeFileSync(CACHE_FILE, JSON.stringify({ token: m[1], fetchedAt: Date.now() }));
+    } catch {
+      // Non-fatal if cache write fails
+    }
     console.log(m[1]);
     process.exit(0);
   }
