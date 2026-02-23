@@ -174,22 +174,29 @@ function buildVolumeMounts(
     });
   }
 
+  // SSH keys — staged into a directory because Apple Container only supports
+  // directory bind mounts, not individual file mounts.
+  const sshStageDir = path.join(DATA_DIR, 'ssh-keys');
+  fs.mkdirSync(sshStageDir, { recursive: true });
+
   // General SSH key — used for RunPod and other servers
   const sshKey = path.join(homeDir, '.ssh', 'id_ed25519');
   if (fs.existsSync(sshKey)) {
-    mounts.push({
-      hostPath: sshKey,
-      containerPath: '/home/node/.ssh/id_ed25519',
-      readonly: true,
-    });
+    fs.copyFileSync(sshKey, path.join(sshStageDir, 'id_ed25519'));
+    fs.chmodSync(path.join(sshStageDir, 'id_ed25519'), 0o600);
   }
 
   // SiteGround SSH key (read-only — agent can only use ssh-siteground wrapper)
   const sitegroundKey = path.join(homeDir, '.config', 'nanoclaw', 'siteground_id_ed25519');
   if (fs.existsSync(sitegroundKey)) {
+    fs.copyFileSync(sitegroundKey, path.join(sshStageDir, 'siteground_id_ed25519'));
+    fs.chmodSync(path.join(sshStageDir, 'siteground_id_ed25519'), 0o600);
+  }
+
+  if (fs.readdirSync(sshStageDir).length > 0) {
     mounts.push({
-      hostPath: sitegroundKey,
-      containerPath: '/home/node/.ssh/siteground_id_ed25519',
+      hostPath: sshStageDir,
+      containerPath: '/home/node/.ssh',
       readonly: true,
     });
   }
