@@ -174,6 +174,16 @@ function buildVolumeMounts(
     });
   }
 
+  // General SSH key — used for RunPod and other servers
+  const sshKey = path.join(homeDir, '.ssh', 'id_ed25519');
+  if (fs.existsSync(sshKey)) {
+    mounts.push({
+      hostPath: sshKey,
+      containerPath: '/home/node/.ssh/id_ed25519',
+      readonly: true,
+    });
+  }
+
   // SiteGround SSH key (read-only — agent can only use ssh-siteground wrapper)
   const sitegroundKey = path.join(homeDir, '.config', 'nanoclaw', 'siteground_id_ed25519');
   if (fs.existsSync(sitegroundKey)) {
