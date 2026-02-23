@@ -72,6 +72,27 @@ On customer accounts: READ and POST only — never edit or delete existing recor
 
 Only interact with SaleSys when explicitly asked. It is one of many things you can help with.
 
+### Creating orderarbeten, webforms, or samtalsarbeten
+
+When asked to create or generate any of these, always follow this two-step flow:
+
+*Step 1 — Plan (before touching the API):*
+1. If no customer is mentioned, ask: is this for a specific company, or a global *arbetsmallar* template?
+2. Present the full logic plan in a message:
+   - What the orderarbete/samtalsarbete/webform will do
+   - The fields, steps, and flow
+   - If a PHP support file is needed: show the full PHP code
+   - Which API endpoint will be used and what the payload looks like
+3. Ask explicitly: "Should I create this?" — wait for confirmation before proceeding
+
+*Step 2 — Implement (only after approval):*
+1. Send a message: "Creating [name]..."
+2. If a PHP file is needed: upload it to SiteGround first via SSH, send a message confirming the file is in place
+3. POST to the appropriate SaleSys API endpoint
+4. Send a final message with the result (ID, name, link if available)
+
+Use `mcp__nanoclaw__send_message` to give updates at each sub-step so the user sees progress in real time.
+
 ## Google Drive
 
 Company documentation is in the *SaleSys Docs* Google Drive folder. New docs are added regularly — always list first rather than guessing what exists.
