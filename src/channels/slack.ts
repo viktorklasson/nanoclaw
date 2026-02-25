@@ -50,6 +50,15 @@ export class SlackChannel implements Channel {
 
       if (!isMainChannel && !isDM) return;
 
+      // Instant :eyes: reaction so the user knows we've seen the message
+      client.reactions.add({
+        channel: msg.channel,
+        timestamp: msg.ts,
+        name: 'eyes',
+      }).catch(() => {
+        // Non-fatal — reaction may already exist or permissions may be missing
+      });
+
       const jid = `slack:${msg.channel}`;
       const timestamp = new Date(parseFloat(msg.ts) * 1000).toISOString();
 
