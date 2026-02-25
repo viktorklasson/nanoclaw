@@ -227,6 +227,8 @@ function readSecrets(): Record<string, string> {
     'SALESYS_APP_API_BASE_URL',
     'GMAIL_APP_PASSWORD',
     'SITEGROUND_SSH_PASSPHRASE',
+    'LOVABLE_WORKSPACE_ID',
+    'LOVABLE_AUTH_TOKEN',
   ]);
 }
 

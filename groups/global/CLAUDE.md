@@ -164,6 +164,25 @@ Key points:
 - Use the "show, don't tell" approach: generate 3 style previews and let the user pick
 - Save presentations to `/workspace/group/`
 
+## Lovable (Web App Builder)
+
+You can create web apps, landing pages, and dashboards using Lovable. When asked to build something with Lovable, read the API docs first:
+
+```bash
+cat /workspace/global/lovable-api.md
+```
+
+*Workflow — always follow these steps:*
+
+1. *Understand* — Ask what the user wants to build, who it's for, what it should look like
+2. *Research* — Search the web for similar apps, best practices, design inspiration
+3. *Plan* — Write a detailed brief covering pages, features, design direction, and real content
+4. *Confirm* — Present the brief and ask: "Should I build this?"
+5. *Build* — Call the Lovable API with the detailed prompt
+6. *Share* — Send the project link back to the user
+
+The auth token expires every hour. If you get an error, ask the user for a fresh token (instructions are in the docs).
+
 ## Publishing Files (viktorklasson.com/s/)
 
 You can publish HTML files (presentations, reports, etc.) to the web using `ssh-siteground-publish`. Files become publicly accessible at `https://viktorklasson.com/s/<filename>`.
