@@ -47,8 +47,10 @@ export class SlackChannel implements Channel {
 
       const isMainChannel = msg.channel === this.channelId;
       const isDM = msg.channel_type === 'im';
+      const isChannel = msg.channel_type === 'channel' || msg.channel_type === 'group';
 
-      if (!isMainChannel && !isDM) return;
+      // Only handle channels the bot is in (DMs, main channel, or other channels)
+      if (!isMainChannel && !isDM && !isChannel) return;
 
       // Instant :eyes: reaction so the user knows we've seen the message
       client.reactions.add({
@@ -72,21 +74,50 @@ export class SlackChannel implements Channel {
         // Non-fatal — fall back to user ID
       }
 
-      // Auto-register new DM conversations
+      // Auto-register new channels and DMs
       const groups = this.opts.registeredGroups();
-      if (isDM && !groups[jid]) {
-        const folder = `slack-dm-${msg.user}`;
-        this.opts.registerGroup(jid, {
-          name: `Slack DM: ${senderName}`,
-          folder,
-          trigger: '',
-          added_at: new Date().toISOString(),
-          requiresTrigger: false,
-        });
-        logger.info({ jid, senderName }, 'Auto-registered Slack DM');
+      if (!groups[jid]) {
+        if (isDM) {
+          const folder = `slack-dm-${msg.user}`;
+          this.opts.registerGroup(jid, {
+            name: `Slack DM: ${senderName}`,
+            folder,
+            trigger: '',
+            added_at: new Date().toISOString(),
+            requiresTrigger: false,
+          });
+          logger.info({ jid, senderName }, 'Auto-registered Slack DM');
+        } else if (!isMainChannel) {
+          // Resolve channel name for the folder/display name
+          let channelName = msg.channel as string;
+          try {
+            const info = await client.conversations.info({ channel: msg.channel });
+            channelName = (info.channel as any)?.name ?? channelName;
+          } catch {
+            // Non-fatal — fall back to channel ID
+          }
+          const folder = `slack-${channelName}`;
+          this.opts.registerGroup(jid, {
+            name: `Slack #${channelName}`,
+            folder,
+            trigger: '',
+            added_at: new Date().toISOString(),
+            requiresTrigger: true,
+          });
+          logger.info({ jid, channelName }, 'Auto-registered Slack channel');
+        }
       }
 
-      const chatName = isDM ? `DM: ${senderName}` : '#assistant';
+      // Resolve chat display name
+      let chatName: string;
+      if (isDM) {
+        chatName = `DM: ${senderName}`;
+      } else if (isMainChannel) {
+        chatName = '#assistant';
+      } else {
+        const currentGroups = this.opts.registeredGroups();
+        chatName = currentGroups[jid]?.name ?? `#${msg.channel}`;
+      }
       this.opts.onChatMetadata(jid, timestamp, chatName, 'slack', !isDM);
 
       // Only deliver message content if the group is registered
