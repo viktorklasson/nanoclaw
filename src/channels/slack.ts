@@ -20,6 +20,7 @@ export class SlackChannel implements Channel {
   private connected = false;
   private opts: SlackChannelOpts;
   private channelId: string;
+  private botUserId: string | null = null;
 
   constructor(opts: SlackChannelOpts) {
     this.opts = opts;
@@ -120,6 +121,16 @@ export class SlackChannel implements Channel {
       }
       this.opts.onChatMetadata(jid, timestamp, chatName, 'slack', !isDM);
 
+      // Rewrite Slack-style bot mention (<@U123>) to @AssistantName
+      // so the trigger pattern works across all channels
+      let content: string = msg.text;
+      if (this.botUserId) {
+        content = content.replace(
+          new RegExp(`<@${this.botUserId}>`, 'g'),
+          `@${ASSISTANT_NAME}`,
+        );
+      }
+
       // Only deliver message content if the group is registered
       const updatedGroups = this.opts.registeredGroups();
       if (updatedGroups[jid]) {
@@ -128,7 +139,7 @@ export class SlackChannel implements Channel {
           chat_jid: jid,
           sender: msg.user,
           sender_name: senderName,
-          content: msg.text,
+          content,
           timestamp,
           is_from_me: false,
           is_bot_message: false,
@@ -148,6 +159,16 @@ export class SlackChannel implements Channel {
     }
     await this.app.start();
     this.connected = true;
+
+    // Resolve bot's own user ID so we can detect @mentions
+    try {
+      const auth = await this.app.client.auth.test();
+      this.botUserId = auth.user_id as string;
+      logger.info({ botUserId: this.botUserId }, 'Resolved bot user ID');
+    } catch {
+      logger.warn('Failed to resolve bot user ID — @mention trigger may not work');
+    }
+
     logger.info({ channelId: this.channelId }, 'Slack channel connected');
   }
 
