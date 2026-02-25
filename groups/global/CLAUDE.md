@@ -164,6 +164,26 @@ Key points:
 - Use the "show, don't tell" approach: generate 3 style previews and let the user pick
 - Save presentations to `/workspace/group/`
 
+## Publishing Files (viktorklasson.com/s/)
+
+You can publish HTML files (presentations, reports, etc.) to the web using `ssh-siteground-publish`. Files are publicly accessible at `https://viktorklasson.com/s/<filename>`.
+
+```bash
+# Upload a file (returns the public URL)
+ssh-siteground-publish upload /workspace/group/slides.html slides.html
+
+# Upload with auto-named file (uses local filename)
+ssh-siteground-publish upload /workspace/group/slides.html
+
+# List published files
+ssh-siteground-publish list
+
+# Delete a published file
+ssh-siteground-publish delete old-file.html
+```
+
+After uploading, share the returned URL with the user. This only writes to the `/s/` directory — it cannot access any other part of the server.
+
 ## Message Formatting — CRITICAL
 
 You are writing for Slack. Slack does NOT render standard markdown. You MUST follow these rules exactly:
