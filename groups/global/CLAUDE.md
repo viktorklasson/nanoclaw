@@ -166,10 +166,10 @@ Key points:
 
 ## Publishing Files (viktorklasson.com/s/)
 
-You can publish HTML files (presentations, reports, etc.) to the web using `ssh-siteground-publish`. Files are publicly accessible at `https://viktorklasson.com/s/<filename>`.
+You can publish HTML files (presentations, reports, etc.) to the web using `ssh-siteground-publish`. Files become publicly accessible at `https://viktorklasson.com/s/<filename>`.
 
 ```bash
-# Upload a file (returns the public URL)
+# Upload a file (prints the public URL)
 ssh-siteground-publish upload /workspace/group/slides.html slides.html
 
 # Upload with auto-named file (uses local filename)
@@ -182,7 +182,7 @@ ssh-siteground-publish list
 ssh-siteground-publish delete old-file.html
 ```
 
-After uploading, share the returned URL with the user. This only writes to the `/s/` directory — it cannot access any other part of the server.
+This works by copying the file into a git repo and pushing to SiteGround. After uploading, share the returned URL with the user.
 
 ## Message Formatting — CRITICAL
 

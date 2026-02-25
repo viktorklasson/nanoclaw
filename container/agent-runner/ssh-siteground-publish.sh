@@ -1,6 +1,6 @@
 #!/bin/bash
-# Publish files to viktorklasson.com/s/ via SiteGround SSH.
-# Restricted to a single directory — cannot write anywhere else.
+# Publish files to viktorklasson.com/s/ via git push.
+# Files are copied into the site repo's s/ directory, committed, and pushed.
 #
 # Usage:
 #   ssh-siteground-publish upload <local-file> [remote-name]
@@ -13,11 +13,8 @@
 #   ssh-siteground-publish list
 #   ssh-siteground-publish delete old-file.html
 
-SITEGROUND_HOST="c122990.sgvps.net"
-SITEGROUND_PORT="18765"
-SITEGROUND_USER="u4-agwza1fud06y"
-SITEGROUND_KEY="/home/node/.ssh/siteground_id_ed25519"
-PUBLISH_DIR="/home/u4-agwza1fud06y/www/viktorklasson.com/public_html/s"
+REPO_DIR="/workspace/extra/projects/viktorklasson.com"
+PUBLISH_DIR="$REPO_DIR/s"
 PUBLIC_URL="https://viktorklasson.com/s"
 
 ACTION="$1"
@@ -30,41 +27,8 @@ if [ -z "$ACTION" ]; then
   exit 1
 fi
 
-# --- SSH agent setup ---
-setup_ssh() {
-  ASKPASS=$(mktemp /tmp/askpass-XXXXXX.sh)
-  cat > "$ASKPASS" << 'ASKEOF'
-#!/bin/sh
-echo "$SITEGROUND_SSH_PASSPHRASE"
-ASKEOF
-  chmod +x "$ASKPASS"
-  eval "$(ssh-agent -s)" > /dev/null 2>&1
-  SSH_ASKPASS="$ASKPASS" SSH_ASKPASS_REQUIRE=force ssh-add "$SITEGROUND_KEY" > /dev/null 2>&1
-  rm -f "$ASKPASS"
-}
-
-cleanup_ssh() {
-  kill "$SSH_AGENT_PID" > /dev/null 2>&1
-}
-
-run_ssh() {
-  ssh \
-    -o StrictHostKeyChecking=no \
-    -o UserKnownHostsFile=/dev/null \
-    -o LogLevel=ERROR \
-    -p "$SITEGROUND_PORT" \
-    "$SITEGROUND_USER@$SITEGROUND_HOST" \
-    "$@"
-}
-
-run_scp() {
-  scp \
-    -o StrictHostKeyChecking=no \
-    -o UserKnownHostsFile=/dev/null \
-    -o LogLevel=ERROR \
-    -P "$SITEGROUND_PORT" \
-    "$@"
-}
+# Ensure s/ directory exists
+mkdir -p "$PUBLISH_DIR"
 
 # --- Block path traversal ---
 validate_filename() {
@@ -77,6 +41,16 @@ validate_filename() {
     echo "Error: filename cannot be empty" >&2
     exit 1
   fi
+}
+
+git_push() {
+  cd "$REPO_DIR" || exit 1
+  git add s/ 2>&1
+  git commit -m "$1" 2>&1
+  git push 2>&1
+  local exit_code=$?
+  cd - > /dev/null
+  return $exit_code
 }
 
 case "$ACTION" in
@@ -102,31 +76,23 @@ case "$ACTION" in
 
     validate_filename "$REMOTE_NAME"
 
-    setup_ssh
+    # Copy file to publish directory
+    cp "$LOCAL_FILE" "$PUBLISH_DIR/$REMOTE_NAME"
 
-    # Ensure publish directory exists
-    run_ssh "mkdir -p '$PUBLISH_DIR'"
-
-    # Upload
-    run_scp "$LOCAL_FILE" "$SITEGROUND_USER@$SITEGROUND_HOST:$PUBLISH_DIR/$REMOTE_NAME"
+    # Commit and push
+    git_push "publish: $REMOTE_NAME"
     EXIT_CODE=$?
-
-    cleanup_ssh
 
     if [ $EXIT_CODE -eq 0 ]; then
       echo "$PUBLIC_URL/$REMOTE_NAME"
     else
-      echo "Error: upload failed" >&2
+      echo "Error: git push failed" >&2
       exit $EXIT_CODE
     fi
     ;;
 
   list)
-    setup_ssh
-    run_ssh "ls -lh '$PUBLISH_DIR/' 2>/dev/null"
-    EXIT_CODE=$?
-    cleanup_ssh
-    exit $EXIT_CODE
+    ls -lh "$PUBLISH_DIR/" 2>/dev/null
     ;;
 
   delete)
@@ -139,15 +105,24 @@ case "$ACTION" in
 
     validate_filename "$REMOTE_NAME"
 
-    setup_ssh
-    run_ssh "rm -f '$PUBLISH_DIR/$REMOTE_NAME'"
+    if [ ! -f "$PUBLISH_DIR/$REMOTE_NAME" ]; then
+      echo "Error: file not found: $REMOTE_NAME" >&2
+      exit 1
+    fi
+
+    rm -f "$PUBLISH_DIR/$REMOTE_NAME"
+
+    cd "$REPO_DIR" || exit 1
+    git add -A s/ 2>&1
+    git commit -m "delete: $REMOTE_NAME" 2>&1
+    git push 2>&1
     EXIT_CODE=$?
-    cleanup_ssh
+    cd - > /dev/null
 
     if [ $EXIT_CODE -eq 0 ]; then
       echo "Deleted: $REMOTE_NAME"
     else
-      echo "Error: delete failed" >&2
+      echo "Error: git push failed" >&2
       exit $EXIT_CODE
     fi
     ;;
