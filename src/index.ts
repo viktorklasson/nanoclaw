@@ -435,19 +435,21 @@ async function main(): Promise<void> {
     registeredGroups: () => registeredGroups,
   };
 
-  // Create and connect channels
+  // Create and connect channels (non-blocking so subsystems start immediately)
   whatsapp = new WhatsAppChannel(channelOpts);
   channels.push(whatsapp);
-  await whatsapp.connect();
+  whatsapp.connect().catch((err) => {
+    logger.error({ err }, 'WhatsApp connection failed (non-blocking)');
+  });
 
   // Slack channel (enabled when SLACK_BOT_TOKEN is set)
+  // Connect in background so Slack issues don't block the scheduler/IPC.
   const slackEnv = readEnvFile(['SLACK_BOT_TOKEN', 'SLACK_CHANNEL_ID']);
   if (slackEnv.SLACK_BOT_TOKEN) {
     const slack = new SlackChannel({ ...channelOpts, registerGroup });
     channels.push(slack);
-    await slack.connect();
 
-    // Register the main Slack channel if not already in DB
+    // Register the main Slack channel eagerly (before connect resolves)
     const slackJid = `slack:${slackEnv.SLACK_CHANNEL_ID}`;
     if (slackEnv.SLACK_CHANNEL_ID && !registeredGroups[slackJid]) {
       registerGroup(slackJid, {
@@ -458,6 +460,10 @@ async function main(): Promise<void> {
         requiresTrigger: false,
       });
     }
+
+    slack.connect().catch((err) => {
+      logger.error({ err }, 'Slack connection failed (non-blocking)');
+    });
   }
 
   // Start subsystems (independently of connection handler)
