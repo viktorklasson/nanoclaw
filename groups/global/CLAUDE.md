@@ -166,7 +166,7 @@ Key points:
 
 ## Lovable (Web App Builder)
 
-You can create web apps, landing pages, and dashboards using Lovable. When asked to build something with Lovable, read the API docs first:
+You can create web apps, landing pages, and dashboards using Lovable. When asked to build something with Lovable, read the full docs first:
 
 ```bash
 cat /workspace/global/lovable-api.md
@@ -178,10 +178,10 @@ cat /workspace/global/lovable-api.md
 2. *Research* — Search the web for similar apps, best practices, design inspiration
 3. *Plan* — Write a detailed brief covering pages, features, design direction, and real content
 4. *Confirm* — Present the brief and ask: "Should I build this?"
-5. *Build* — Call the Lovable API with the detailed prompt
-6. *Share* — Send the project link back to the user
+5. *Build* — URL-encode the prompt and create a Lovable link
+6. *Share* — Send the link in Slack using `<url|Klicka här för att öppna projektet>`
 
-The auth token expires every hour. If you get an error, ask the user for a fresh token (instructions are in the docs).
+No API keys needed — the user clicks the link and Lovable starts building automatically.
 
 ## Publishing Files (viktorklasson.com/s/)
 
