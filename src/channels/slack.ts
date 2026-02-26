@@ -1,6 +1,6 @@
 import { App, LogLevel } from '@slack/bolt';
 
-import { ASSISTANT_NAME } from '../config.js';
+import { ASSISTANT_NAME, TRIGGER_PATTERN } from '../config.js';
 import { readEnvFile } from '../env.js';
 import { logger } from '../logger.js';
 import { Channel, OnChatMetadata, OnInboundMessage, RegisteredGroup } from '../types.js';
@@ -42,8 +42,9 @@ export class SlackChannel implements Channel {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const msg = message as any;
 
-      // Ignore bot messages and message edits/deletes
-      if (msg.subtype || msg.bot_id) return;
+      // Ignore bot messages and message edits/deletes (but allow file_share)
+      if (msg.bot_id) return;
+      if (msg.subtype && msg.subtype !== 'file_share') return;
       if (!msg.text || !msg.user) return;
 
       const isMainChannel = msg.channel === this.channelId;
@@ -53,16 +54,33 @@ export class SlackChannel implements Channel {
       // Only handle channels the bot is in (DMs, main channel, or other channels)
       if (!isMainChannel && !isDM && !isChannel) return;
 
-      // Instant :eyes: reaction so the user knows we've seen the message
-      client.reactions.add({
-        channel: msg.channel,
-        timestamp: msg.ts,
-        name: 'eyes',
-      }).catch(() => {
-        // Non-fatal — reaction may already exist or permissions may be missing
-      });
+      // Rewrite Slack-style bot mention (<@U123>) to @AssistantName early
+      // so we can check the trigger pattern before reacting
+      let content: string = msg.text;
+      if (this.botUserId) {
+        content = content.replace(
+          new RegExp(`<@${this.botUserId}>`, 'g'),
+          `@${ASSISTANT_NAME}`,
+        );
+      }
 
+      // Only react with :eyes: when we'll actually process the message:
+      // always on main channel and DMs, only on trigger in other channels
+      const groups = this.opts.registeredGroups();
       const jid = `slack:${msg.channel}`;
+      const group = groups[jid];
+      const needsTrigger = group && group.requiresTrigger !== false;
+      const hasTrigger = TRIGGER_PATTERN.test(content.trim());
+      if (isMainChannel || isDM || !needsTrigger || hasTrigger) {
+        client.reactions.add({
+          channel: msg.channel,
+          timestamp: msg.ts,
+          name: 'eyes',
+        }).catch(() => {
+          // Non-fatal — reaction may already exist or permissions may be missing
+        });
+      }
+
       const timestamp = new Date(parseFloat(msg.ts) * 1000).toISOString();
 
       // Resolve user display name
@@ -76,7 +94,6 @@ export class SlackChannel implements Channel {
       }
 
       // Auto-register new channels and DMs
-      const groups = this.opts.registeredGroups();
       if (!groups[jid]) {
         if (isDM) {
           const folder = `slack-dm-${msg.user}`;
@@ -120,16 +137,6 @@ export class SlackChannel implements Channel {
         chatName = currentGroups[jid]?.name ?? `#${msg.channel}`;
       }
       this.opts.onChatMetadata(jid, timestamp, chatName, 'slack', !isDM);
-
-      // Rewrite Slack-style bot mention (<@U123>) to @AssistantName
-      // so the trigger pattern works across all channels
-      let content: string = msg.text;
-      if (this.botUserId) {
-        content = content.replace(
-          new RegExp(`<@${this.botUserId}>`, 'g'),
-          `@${ASSISTANT_NAME}`,
-        );
-      }
 
       // Only deliver message content if the group is registered
       const updatedGroups = this.opts.registeredGroups();

@@ -220,7 +220,9 @@ NEVER use any of these — they render as literal characters in Slack:
 - `[link text](url)` — this does NOT create a link, paste URLs directly
 - `__double underscores__` — use single `_underscores_`
 
-Before sending any message, mentally scan it for `**` and replace with `*`.
+URLS: Never wrap a URL in asterisks, bold, or any formatting. A URL must always stand alone with no surrounding `*` or `**` characters. Wrong: `*<https://example.com>*` — Right: `<https://example.com>`
+
+This is a hard rule — double-check every message before sending. If you see `**` anywhere in your output, replace it with `*`. If you see `*` touching a URL, remove it.
 
 ## Communication Style
 

@@ -218,7 +218,20 @@ function buildVolumeMounts(
       group.name,
       isMain,
     );
-    mounts.push(...validatedMounts);
+    // Deduplicate: skip additional mounts whose hostPath already appears
+    // (Apple Container rejects duplicate VirtioFS tags from same host path)
+    const existingPaths = new Set(mounts.map((m) => m.hostPath));
+    for (const m of validatedMounts) {
+      if (!existingPaths.has(m.hostPath)) {
+        mounts.push(m);
+        existingPaths.add(m.hostPath);
+      } else {
+        logger.warn(
+          { group: group.name, hostPath: m.hostPath },
+          'Skipping duplicate mount (already in built-in mounts)',
+        );
+      }
+    }
   }
 
   return mounts;

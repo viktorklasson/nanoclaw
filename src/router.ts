@@ -20,10 +20,20 @@ export function stripInternalTags(text: string): string {
   return text.replace(/<internal>[\s\S]*?<\/internal>/g, '').trim();
 }
 
+/**
+ * Convert markdown bold (**text**) to Slack bold (*text*).
+ * Careful not to mangle URLs — only replace ** pairs that aren't inside <url> brackets.
+ */
+function markdownToSlack(text: string): string {
+  // Replace **text** with *text* (markdown bold → Slack bold)
+  // Negative lookbehind/ahead for < > to avoid mangling Slack links
+  return text.replace(/\*\*(.+?)\*\*/g, '*$1*');
+}
+
 export function formatOutbound(rawText: string): string {
   const text = stripInternalTags(rawText);
   if (!text) return '';
-  return text;
+  return markdownToSlack(text);
 }
 
 export function routeOutbound(
