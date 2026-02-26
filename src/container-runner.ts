@@ -100,6 +100,16 @@ function buildVolumeMounts(
     }
   }
 
+  // Projects directory — shared git repos (e.g. viktorklasson.com for publishing)
+  const projectsDir = path.join(projectRoot, 'projects');
+  if (fs.existsSync(projectsDir)) {
+    mounts.push({
+      hostPath: projectsDir,
+      containerPath: '/workspace/extra/projects',
+      readonly: false,
+    });
+  }
+
   // Per-group Claude sessions directory (isolated from other groups)
   // Each group gets their own .claude/ to prevent cross-group session access
   const groupSessionsDir = path.join(

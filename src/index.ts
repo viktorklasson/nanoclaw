@@ -10,7 +10,6 @@ import {
   TRIGGER_PATTERN,
 } from './config.js';
 import { SlackChannel } from './channels/slack.js';
-import { WhatsAppChannel } from './channels/whatsapp.js';
 import { readEnvFile } from './env.js';
 import {
   ContainerOutput,
@@ -50,7 +49,6 @@ let registeredGroups: Record<string, RegisteredGroup> = {};
 let lastAgentTimestamp: Record<string, string> = {};
 let messageLoopRunning = false;
 
-let whatsapp: WhatsAppChannel;
 const channels: Channel[] = [];
 const queue = new GroupQueue();
 
@@ -436,14 +434,6 @@ async function main(): Promise<void> {
   };
 
   // Create and connect channels (non-blocking so subsystems start immediately)
-  whatsapp = new WhatsAppChannel(channelOpts);
-  channels.push(whatsapp);
-  whatsapp.connect().catch((err) => {
-    logger.error({ err }, 'WhatsApp connection failed (non-blocking)');
-  });
-
-  // Slack channel (enabled when SLACK_BOT_TOKEN is set)
-  // Connect in background so Slack issues don't block the scheduler/IPC.
   const slackEnv = readEnvFile(['SLACK_BOT_TOKEN', 'SLACK_CHANNEL_ID']);
   if (slackEnv.SLACK_BOT_TOKEN) {
     const slack = new SlackChannel({ ...channelOpts, registerGroup });
@@ -490,7 +480,7 @@ async function main(): Promise<void> {
     },
     registeredGroups: () => registeredGroups,
     registerGroup,
-    syncGroupMetadata: (force) => whatsapp?.syncGroupMetadata(force) ?? Promise.resolve(),
+    syncGroupMetadata: () => Promise.resolve(),
     getAvailableGroups,
     writeGroupsSnapshot: (gf, im, ag, rj) => writeGroupsSnapshot(gf, im, ag, rj),
   });
