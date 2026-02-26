@@ -88,9 +88,17 @@ Two authentication contexts — always check the docs before making requests:
 - *Customer token* — run `node /app/get-customer-token.mjs <username>` (handles everything automatically)
 
 Never hardcode tokens. Never store customer tokens between sessions.
-On customer accounts: READ and POST only — never edit or delete existing records.
+
+*Always use `salesys-curl` instead of `curl` for SaleSys API requests.* It works exactly like curl but blocks PUT, DELETE, and PATCH methods as a safety measure. Only GET and POST are allowed.
 
 Only interact with SaleSys when explicitly asked. It is one of many things you can help with.
+
+### Important SaleSys concepts
+
+- *Spärrade användare* = suspended users (not active). The term is "suspension", not deactivation.
+- *Calls/samtal* — to fetch call data, use the *export* functionality, not the calls API endpoint. The export gives better and more complete data.
+- *User search* — when searching for a user, always check their `fullname` field too, not just username or email.
+- *Signed offers → orders* — in almost all cases, a signed offer automatically becomes an order. The exception is projects with *mötesbokning* (meeting booking) activated — there, the flow is different.
 
 ### Creating orderarbeten, webforms, or samtalsarbeten
 
@@ -163,6 +171,7 @@ Key points:
 - Every slide must fit exactly in the viewport — no scrolling
 - Use the "show, don't tell" approach: generate 3 style previews and let the user pick
 - Save presentations to `/workspace/group/`
+- For charts and data visualization, use Chart.js via CDN: `<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>` — supports bar, line, pie, doughnut, radar, and more with animations
 
 ## Lovable (Web App Builder)
 

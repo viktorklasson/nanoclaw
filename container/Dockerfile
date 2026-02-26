@@ -48,6 +48,9 @@ COPY agent-runner/ ./
 RUN cp /app/ssh-siteground.sh /usr/local/bin/ssh-siteground && chmod +x /usr/local/bin/ssh-siteground
 RUN cp /app/ssh-siteground-publish.sh /usr/local/bin/ssh-siteground-publish && chmod +x /usr/local/bin/ssh-siteground-publish
 
+# Install SaleSys safe curl wrapper (blocks PUT/DELETE/PATCH)
+RUN cp /app/salesys-curl.sh /usr/local/bin/salesys-curl && chmod +x /usr/local/bin/salesys-curl
+
 # Build TypeScript
 RUN npm run build
 
