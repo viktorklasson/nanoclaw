@@ -185,11 +185,14 @@ No API keys needed — the user clicks the link and Lovable starts building auto
 
 ## Publishing Files (viktorklasson.com/s/)
 
-You can publish HTML files (presentations, reports, etc.) to the web using `ssh-siteground-publish`. Files become publicly accessible at `https://viktorklasson.com/s/<filename>`.
+You can publish any file (HTML, images, PDFs, etc.) to the web using `ssh-siteground-publish`. Files become publicly accessible at `https://viktorklasson.com/s/<filename>`.
 
 ```bash
 # Upload a file (prints the public URL)
 ssh-siteground-publish upload /workspace/group/slides.html slides.html
+
+# Upload to a subdirectory (e.g. assets/)
+ssh-siteground-publish upload /workspace/group/logo.png assets/logo.png
 
 # Upload with auto-named file (uses local filename)
 ssh-siteground-publish upload /workspace/group/slides.html
@@ -202,6 +205,16 @@ ssh-siteground-publish delete old-file.html
 ```
 
 This works by copying the file into a git repo and pushing to SiteGround. After uploading, share the returned URL with the user.
+
+### Images in presentations
+
+When a presentation needs images (photos, logos, illustrations), you can host them on the webhotell:
+
+1. Download the image: `curl -o /tmp/photo.jpg "https://example.com/photo.jpg"`
+2. Upload it: `ssh-siteground-publish upload /tmp/photo.jpg assets/photo.jpg`
+3. Reference it in your HTML: `<img src="https://viktorklasson.com/s/assets/photo.jpg">`
+
+Use the `assets/` subdirectory for images and other non-HTML files to keep things organized. Upload all assets first, then build the HTML referencing those URLs.
 
 ## Message Formatting — CRITICAL
 

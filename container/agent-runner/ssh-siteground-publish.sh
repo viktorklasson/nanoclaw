@@ -33,12 +33,19 @@ mkdir -p "$PUBLISH_DIR"
 # --- Block path traversal ---
 validate_filename() {
   local name="$1"
-  if echo "$name" | grep -qE '(\.\.|\/)'; then
-    echo "Error: filename cannot contain '..' or '/'" >&2
+  if echo "$name" | grep -qE '(\.\.)'; then
+    echo "Error: filename cannot contain '..'" >&2
     exit 1
   fi
   if [ -z "$name" ]; then
     echo "Error: filename cannot be empty" >&2
+    exit 1
+  fi
+  # Allow one level of subdirectory (e.g. assets/photo.jpg) but no deeper
+  local depth
+  depth=$(echo "$name" | tr -cd '/' | wc -c | tr -d ' ')
+  if [ "$depth" -gt 1 ]; then
+    echo "Error: only one subdirectory level allowed (e.g. assets/photo.jpg)" >&2
     exit 1
   fi
 }
@@ -75,6 +82,10 @@ case "$ACTION" in
     fi
 
     validate_filename "$REMOTE_NAME"
+
+    # Create subdirectory if needed (e.g. assets/photo.jpg)
+    DEST_DIR=$(dirname "$PUBLISH_DIR/$REMOTE_NAME")
+    mkdir -p "$DEST_DIR"
 
     # Copy file to publish directory
     cp "$LOCAL_FILE" "$PUBLISH_DIR/$REMOTE_NAME"
