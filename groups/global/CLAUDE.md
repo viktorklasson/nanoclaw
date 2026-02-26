@@ -216,6 +216,39 @@ When a presentation needs images (photos, logos, illustrations), you can host th
 
 Use the `assets/` subdirectory for images and other non-HTML files to keep things organized. Upload all assets first, then build the HTML referencing those URLs.
 
+## Rich Messages (Slack Block Kit)
+
+For richer formatting, pass the `blocks` parameter to `send_message` with a JSON array of Slack Block Kit blocks. The `text` field becomes the notification fallback.
+
+Available block types (display-only, no interactivity endpoint needed):
+
+- *header* — large bold title (plain_text only, max 150 chars)
+- *section* — text block with optional two-column `fields` layout (mrkdwn or plain_text)
+- *divider* — horizontal rule
+- *image* — image from a public URL (requires `image_url` and `alt_text`)
+- *context* — small muted line with text/images (metadata, attribution)
+- *table* — native table with rows and columns (max 100 rows, 1 table per message)
+
+Example — sending a report with a header, key-value fields, and a table:
+
+```json
+[
+  {"type":"header","text":{"type":"plain_text","text":"Weekly Report"}},
+  {"type":"divider"},
+  {"type":"section","fields":[
+    {"type":"mrkdwn","text":"*Sales*"},{"type":"mrkdwn","text":"$42,150"},
+    {"type":"mrkdwn","text":"*New Customers*"},{"type":"mrkdwn","text":"18"}
+  ]},
+  {"type":"table","column_settings":[{"align":"left"},{"align":"right"}],
+   "rows":[
+     [{"type":"raw_text","text":"Product"},{"type":"raw_text","text":"Revenue"}],
+     [{"type":"raw_text","text":"Widget A"},{"type":"raw_text","text":"$18,200"}]
+   ]}
+]
+```
+
+Use blocks when you want structured layout (tables, key-value pairs, images). For simple messages, plain text is fine.
+
 ## Message Formatting — CRITICAL
 
 You are writing for Slack. Slack does NOT render standard markdown. You MUST follow these rules exactly:

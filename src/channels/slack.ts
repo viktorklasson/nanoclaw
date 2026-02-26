@@ -179,12 +179,14 @@ export class SlackChannel implements Channel {
     logger.info({ channelId: this.channelId }, 'Slack channel connected');
   }
 
-  async sendMessage(jid: string, text: string): Promise<void> {
+  async sendMessage(jid: string, text: string, blocks?: unknown[]): Promise<void> {
     const channel = jid.replace('slack:', '');
-    await this.app.client.chat.postMessage({
-      channel,
-      text,
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const payload: any = { channel, text };
+    if (blocks && Array.isArray(blocks) && blocks.length > 0) {
+      payload.blocks = blocks;
+    }
+    await this.app.client.chat.postMessage(payload);
   }
 
   isConnected(): boolean {

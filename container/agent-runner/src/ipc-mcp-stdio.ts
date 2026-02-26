@@ -45,13 +45,15 @@ server.tool(
   {
     text: z.string().describe('The message text to send'),
     sender: z.string().optional().describe('Your role/identity name (e.g. "Researcher"). When set, messages appear from a dedicated bot in Telegram.'),
+    blocks: z.string().optional().describe('Optional Slack Block Kit JSON array string. When provided, renders rich formatting (tables, images, headers, sections). The text field becomes the notification fallback. Example: \'[{"type":"header","text":{"type":"plain_text","text":"Title"}},{"type":"section","text":{"type":"mrkdwn","text":"Body"}}]\''),
   },
   async (args) => {
-    const data: Record<string, string | undefined> = {
+    const data: Record<string, unknown> = {
       type: 'message',
       chatJid,
       text: args.text,
       sender: args.sender || undefined,
+      blocks: args.blocks || undefined,
       groupFolder,
       timestamp: new Date().toISOString(),
     };

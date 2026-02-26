@@ -15,7 +15,7 @@ import { logger } from './logger.js';
 import { RegisteredGroup } from './types.js';
 
 export interface IpcDeps {
-  sendMessage: (jid: string, text: string) => Promise<void>;
+  sendMessage: (jid: string, text: string, blocks?: unknown[]) => Promise<void>;
   registeredGroups: () => Record<string, RegisteredGroup>;
   registerGroup: (jid: string, group: RegisteredGroup) => void;
   syncGroupMetadata: (force: boolean) => Promise<void>;
@@ -72,13 +72,24 @@ export function startIpcWatcher(deps: IpcDeps): void {
             try {
               const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
               if (data.type === 'message' && data.chatJid && data.text) {
+                // Parse optional Block Kit blocks
+                let blocks: unknown[] | undefined;
+                if (data.blocks) {
+                  try {
+                    blocks = typeof data.blocks === 'string'
+                      ? JSON.parse(data.blocks)
+                      : data.blocks;
+                  } catch {
+                    logger.warn({ sourceGroup }, 'Invalid blocks JSON in IPC message, sending as plain text');
+                  }
+                }
                 // Authorization: verify this group can send to this chatJid
                 const targetGroup = registeredGroups[data.chatJid];
                 if (
                   isMain ||
                   (targetGroup && targetGroup.folder === sourceGroup)
                 ) {
-                  await deps.sendMessage(data.chatJid, data.text);
+                  await deps.sendMessage(data.chatJid, data.text, blocks);
                   logger.info(
                     { chatJid: data.chatJid, sourceGroup },
                     'IPC message sent',
