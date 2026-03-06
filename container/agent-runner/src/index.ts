@@ -432,7 +432,8 @@ async function runQuery(
         'TodoWrite', 'ToolSearch', 'Skill',
         'NotebookEdit',
         'mcp__nanoclaw__*',
-        'mcp__gdrive__*'
+        'mcp__gdrive__*',
+        'mcp__salesys__*'
       ],
       env: sdkEnv,
       permissionMode: 'bypassPermissions',
@@ -454,6 +455,16 @@ async function runQuery(
           env: {
             GDRIVE_OAUTH_PATH: '/home/node/.gdrive-mcp/gcp-oauth.keys.json',
             GDRIVE_CREDENTIALS_PATH: '/home/node/.gdrive-mcp/credentials.json',
+          },
+        },
+        salesys: {
+          command: 'node',
+          args: ['/app/tools/salesys-mcp/dist/index.js'],
+          env: {
+            SALESYS_API_BASE_URL: sdkEnv.SALESYS_API_BASE_URL || sdkEnv.SALESYS_APP_API_BASE_URL || 'https://app.salesys.se',
+            SALESYS_JWT_TOKEN: sdkEnv.SALESYS_API_TOKEN || '',
+            SALESYS_ADMIN_API_BASE_URL: sdkEnv.SALESYS_ADMIN_API_BASE_URL || 'https://admin.salesys.se',
+            SALESYS_ADMIN_TOKEN: sdkEnv.SALESYS_ADMIN_TOKEN || '',
           },
         },
       },
